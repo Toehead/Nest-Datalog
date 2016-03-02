@@ -1,0 +1,502 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Nest-Extended: Long Lake</title>
+ 	
+	<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="resources/libs/flot/excanvas.min.js"></script><![endif]-->
+	<script language="javascript" type="text/javascript" src="resources/libs/flot/jquery.min.js"></script>
+	<script language="javascript" type="text/javascript" src="resources/libs/flot/jquery.flot.min.js"></script>
+	<script language="javascript" type="text/javascript" src="resources/libs/flot/jquery.flot.time.min.js"></script>
+	<script language="javascript" type="text/javascript" src="resources/libs/flot/date.min.js"></script>
+	<script language="javascript" type="text/javascript" src="resources/libs/flot/jquery.flot.rangeselection.min.js"></script>
+	<script language="javascript" type="text/javascript" src="resources/libs/flot/jquery.flot.tooltip.js"></script>
+	
+
+
+
+<script language="javascript" type='text/javascript' src="resources/libs/flot/jquery.flot.axislabels.js"></script>
+
+<script type="text/javascript" src="https://rawgit.com/MichaelZinsmaier/CurvedLines/master/curvedLines.js"></script>
+
+	<script language="javascript">
+
+//need to protect with password, otherwise anybody can tell if you are on vacation
+
+
+
+	var temperatureGraph;
+	var humidGraph;
+	var miscellanyGraph;
+	var rangeselectionCallback = function(o){
+		console.log("New selection:"+o.start+","+o.end);
+		var tempxaxis = temperatureGraph.getAxes().xaxis;
+		tempxaxis.options.min = o.start;
+		tempxaxis.options.max = o.end;
+		temperatureGraph.setupGrid();
+		temperatureGraph.draw();
+		var humidxaxis = humidGraph.getAxes().xaxis;
+		humidxaxis.options.min = o.start;
+		humidxaxis.options.max = o.end;
+		humidGraph.setupGrid();
+		humidGraph.draw();
+		var miscellanyxaxis = miscellanyGraph.getAxes().xaxis;
+		miscellanyxaxis.options.min = o.start;
+		miscellanyxaxis.options.max = o.end;
+		miscellanyGraph.setupGrid();
+		miscellanyGraph.draw();
+	}
+
+	function getSeries(fulldata, key) {
+		var t = fulldata["timestamp"];
+		var y = fulldata[key];
+		var zipped = [];
+		for (index = 0; index < t.length; index++) {
+			zipped.push( [1000*t[index], y[index]] );
+		}
+		return zipped;
+	}
+
+
+	function nullify(series) {
+		for (index = 0; index < series.length; index++) {
+			if (series[index][1] <= 0) series[index][1] = null; // Remove non-positive values
+		}
+		return series;
+	}
+
+	function getData() {
+		var d = new Date();
+		var currenttime = d.getTime();
+		var yesterdaytime = currenttime - 2*86400000;
+
+		$.getJSON('resources/utils/nest-get-json.php?datatype=current', function(fulldata) {
+			var tempdata = [
+				{label: "Outside Temp.", color: "#DF7401", data: getSeries(fulldata, "outside_temp"),yaxis:2,curvedLines: {apply: false}},
+				{label: "Current Temp.", color: "#B40404", data: getSeries(fulldata, "current_temp"),curvedLines: {apply: false}},
+				{label: "Heat Target Temp.", color: "#848484", data: getSeries(fulldata, "low_target_temp")},
+				{label: "AC Target Temp.", color: "#848484", data: nullify(getSeries(fulldata, "high_target_temp"))},
+				{label: "Aux Threshold Temp.", color: "#00FF00", data: getSeries(fulldata, "aux_threshold"),yaxis:2},
+				{label: "Fan On", color: "#FFFF00", yaxis: 3, lines: {lineWidth: 0, fill: .30},
+					data: nullify(getSeries(fulldata, "fan_on"))},
+				{label: "Away Mode", color: "#000000", yaxis: 5, lines: {lineWidth: 0, fill: .30},
+					data: nullify(getSeries(fulldata, "away_status"))},
+				{label: "Leaf Earning", color: "#00FF00", yaxis: 4, lines: {lineWidth: 0, fill: .30},
+					data: nullify(getSeries(fulldata, "leaf_status"))},
+				{label: "Heat On", color: "#FF0000", yaxis: 3, lines: {lineWidth: 0, fill: .50},
+					data: nullify(getSeries(fulldata, "heat_on"))},
+				{label: "AC On", color: "#0000FF", yaxis: 3, lines: {lineWidth: 0, fill: .50},
+					data: nullify(getSeries(fulldata, "ac_on"))},
+				{label: "Aux", color: "#FF0000", yaxis: 4, lines: {lineWidth: 0, fill: .90},
+					data: nullify(getSeries(fulldata, "alt_heat"))},
+
+			];
+
+
+			
+			var tempoptions = {
+	series: {
+                     curvedLines: {active: true}
+                 },
+
+ 				axisLabels: {
+          				show: true
+      					},
+					
+				xaxes: [{
+					mode: "time",
+					timeformat: "%m/%d/%Y %H:%M",
+					timezone: "browser",
+					min: yesterdaytime,
+					max: currenttime,
+					
+				}],
+				yaxes: [{
+					min: 40,
+					max: 80,
+					position: "right",
+					axisLabel: 'Process Temps (F)',
+					axisLabelPadding: 10,
+       					axisLabelFontFamily: 'Verdana, Arial',
+       					axisLabelFontSizePixels: 10
+ 					
+					
+				
+				},{
+					position: "left",			
+					axisLabel: 'Outside Temp (F)',
+					axisLabelPadding: 10,
+       					axisLabelFontFamily: 'Verdana, Arial',
+       					axisLabelFontSizePixels: 10
+				},{
+					show: false,
+					min: 0,
+					max: 4
+
+				},{	
+					show: false,
+					min: 0,
+					max: 8
+				},{
+					show: false,
+					min: 0,
+					max: 1
+
+				}],
+				
+				legend: {
+					noColumns: 4,
+					position: "sw",
+ 					labelBoxBorderColor: "#4d4d4d",
+					backgroundOpacity: 0.5
+				},
+				grid: {
+					hoverable: true,
+				},
+				
+				tooltip: {
+       					 show: true,
+       					 content: "%s | x: %x; y: %y"
+     				 },
+		
+                 
+			};
+			temperatureGraph = $.plot("#temperature",tempdata,tempoptions);
+//get system info
+var sysinfo = getSeries(fulldata, "hvac_wires");
+var sysinfo_current=sysinfo[sysinfo.length-1][1];
+console.log(sysinfo_current);//log varible to console for debugging purposes
+$("#sysinfo").text(sysinfo_current);
+
+//Get last value of each parameter and store it in a string to be displayed as current status
+var temp_otemp=getSeries(fulldata, "outside_temp");
+$("#c_outside_temp").text(temp_otemp[temp_otemp.length-1][1]);
+var temp_itemp=getSeries(fulldata, "current_temp");
+$("#c_inside_temp").text(temp_itemp[temp_itemp.length-1][1]);
+var temp_htemp=getSeries(fulldata, "low_target_temp");
+$("#c_heat_temp").text(temp_htemp[temp_htemp.length-1][1]);
+var temp_ctemp=getSeries(fulldata, "high_target_temp");
+$("#c_cool_temp").text(temp_ctemp[temp_ctemp.length-1][1]);
+var temp_auxtemp=getSeries(fulldata, "aux_threshold");
+$("#c_aux_temp").text(temp_auxtemp[temp_auxtemp.length-1][1]);
+// Assign true/false to 0 and 1 returns. This is for heater, ac, fan status. 
+//heater
+var temp_heat=getSeries(fulldata, "heat_on");
+if (temp_heat[temp_heat.length-1][1] == 1){
+$("#c_heat_status").text("Heat On");
+}
+else {
+$("#c_heat_status").text("Heat Off");
+};
+//AC
+var temp_ac=getSeries(fulldata, "ac_on");
+if (temp_ac[temp_ac.length-1][1] == 1){
+$("#c_ac_status").text("AC On");
+}
+else {
+$("#c_ac_status").text("AC Off");
+};
+//Fan
+var temp_fan=getSeries(fulldata, "fan_on");
+if (temp_fan[temp_fan.length-1][1] == 1){
+$("#c_fan_status").text("Fan On");
+}
+else {
+$("#c_fan_status").text("Fan Off");
+};
+// Aux Heat
+var temp_aux=getSeries(fulldata, "alt_heat");
+if (temp_aux[temp_aux.length-1][1] == 1){
+$("#c_aux_status").text("Aux Heat On");
+}
+else {
+$("#c_aux_status").text("Aux Heat Off");
+};
+// Away Status
+var temp_away=getSeries(fulldata, "away_status");
+if (temp_away[temp_away.length-1][1] == 1){
+$("#c_away_status").text("Away");
+}
+else {
+$("#c_away_status").text("Home");
+};
+// get last timestamp and convert to date
+var c_date_temp=Date(temp_fan[temp_fan.length-1][0]);
+$("#c_time").text(c_date_temp);
+
+
+
+
+			$.plot("#navigation",
+				[{color: "#DF7401", data: getSeries(fulldata, "outside_temp")}], {
+				rangeselection:{
+					color: "#feb",
+					start: yesterdaytime*2,
+					end: currenttime,
+					enabled: true,
+					callback: rangeselectionCallback
+				},
+				xaxes: [{
+					mode: "time",
+					timeformat: "%m/%d/%Y",
+					timezone: "browser",
+				}],
+				yaxes: [{
+					show: false
+				}],
+			});
+
+			humiddata = [
+				{label: "Outside Humidity", color: "#D7DF01", data: getSeries(fulldata, "outside_humidity")},
+				{label: "Target Humidity",  color: "#5882FA", data: getSeries(fulldata, "target_humidity")},
+				{label: "Current Humidity", color: "#0B0B61", data: getSeries(fulldata, "current_humidity")},
+			];
+
+			var humidoptions = {
+series: {
+                     curvedLines: {active: false}
+                 },
+				xaxes: [{
+					mode: "time",
+					timeformat: "%m/%d %H:%M",
+					timezone: "browser",
+					min: yesterdaytime,
+					max: currenttime
+				}],
+				yaxes: [{
+					min:0,
+					max:100,
+					axisLabel: 'RH (%)',
+					axisLabelPadding: 10,
+       					axisLabelFontFamily: 'Verdana, Arial',
+       					axisLabelFontSizePixels: 10
+				}],
+				legend: {
+					position: "sw"
+				},
+				grid: {
+					hoverable: true,
+				},
+				tooltip:true
+			};
+			humidGraph = $.plot("#humidity",humiddata,humidoptions);
+
+			miscdata = [
+				{label: "Battery Level", color: "#088A08", data: getSeries(fulldata, "battery_level")},
+			
+				{label: "Nest Online",  yaxis: 2, lines: {lineWidth: 0, fill: .50, shadowSize: 0},
+					data: nullify(getSeries(fulldata, "is_online"))},
+			];
+
+			var miscoptions = {
+					
+				xaxes: [{
+					mode: "time",
+					timeformat: "%m/%d %H:%M",
+					timezone: "browser",
+					min: yesterdaytime,
+					max: currenttime
+				}],
+				yaxes: [{
+					min: 3.5,
+					max: 4,
+					axisLabel: 'Voltage (V)',
+					axisLabelPadding: 10,
+       					axisLabelFontFamily: 'Verdana, Arial',
+       					axisLabelFontSizePixels: 10,
+					ticks: [[4.0, "Max Voltage"],[3.70,"Min Safe Voltage"]]
+				}, {
+					show: false,
+					min: 0,
+					max: 1
+				}],
+				legend: {
+					position: "sw"
+				},
+				grid: {
+					hoverable: true,
+				},
+				tooltip:true
+			};
+			miscellanyGraph = $.plot("#miscellany",miscdata,miscoptions);
+		});
+		setInterval(getData, 300000);
+	};
+
+	function getEnergy() {
+		var d = new Date();
+		var currenttime = d.getTime();
+		var lastmonth = currenttime - 30*86400000;
+		var initSpan = {start: lastmonth, end: currenttime};
+
+		$.getJSON('resources/utils/nest-get-json.php?datatype=daily', function(fulldata) {
+			function summary(o) {
+				var t = fulldata["timestamp"];
+				var heating = 0; // Heating time in seconds
+				var cooling = 0; // Cooling time in seconds
+				for (index = 0; index < t.length; index++) {
+					if ((o.start <= 1000*t[index]) && (1000*t[index] <= o.end)) {
+						heating += parseFloat(fulldata["total_heating_time"][index]);
+						cooling += parseFloat(fulldata["total_cooling_time"][index]);
+					}
+				}
+				$("#heating").text(heating.toFixed(2)/3600);
+				$("#cooling").text(cooling.toFixed(2)/3600);
+				$("#days").text((o.end - o.start)/86400000);
+			}
+//Get total heating and cooling time for historical data
+var heat_time = getSeries(fulldata, "total_heating_time");
+var cool_time = getSeries(fulldata, "total_cooling_time");
+
+
+
+				for (a = 0; a < heat_time.length; a++) {
+					heat_time[a][1] /= 3600;
+					};
+				for (b = 0; b < cool_time.length; b++) {
+
+
+					cool_time[b][1] /= 3600;
+					};
+
+
+
+console.log(heat_time);
+
+
+
+			var energyGraph = $.plot("#energy", [
+				{label: "Heating Time", color: "#300000",
+					data: heat_time},
+				{label: "Cooling Time", color: "#000030",
+					data: cool_time},
+				{label: "Heat Degree Days", color: "#800000", yaxis: 2,
+					data: nullify(getSeries(fulldata, "heating_degree_days"))},
+				{label: "Cool Degree Days", color: "#000080", yaxis: 2,
+					data: nullify(getSeries(fulldata, "cooling_degree_days"))},
+				], {
+					
+				xaxes: [{
+					mode: "time",
+					timeformat: "%m/%d/%Y",
+					min: initSpan.start,
+					max: initSpan.end
+
+				}],
+				yaxes: [{
+					axisLabel: 'Heating Time (h)',
+					axisLabelPaddig: 10,
+       					axisLabelFontFamily: 'Verdana, Arial',
+       					axisLabelFontSizePixels: 10	
+				},{
+					position: "right",
+					show: true,
+					axisLabel: 'Heating Degree Days',
+					axisLabelPadding: 10,
+       					axisLabelFontFamily: 'Verdana, Arial',
+       					axisLabelFontSizePixels: 10	
+				}],
+
+				legend: {
+					noColumns: 2,
+					position: "nw"
+				},
+				grid: {
+					hoverable: true,
+				},
+				tooltip:true
+			});
+
+		$.plot("#energynav",
+				[{color: "#800000", data: nullify(getSeries(fulldata, "heating_degree_days"))},
+				 {color: "#000080", data: nullify(getSeries(fulldata, "cooling_degree_days"))}],
+				{rangeselection:{
+					color: "#feb",
+					start: initSpan.start,
+					end: initSpan.end,
+					enabled: true,
+					callback: function(o){
+						console.log("New energy selection:"+o.start+","+o.end);
+						var tempxaxis = energyGraph.getAxes().xaxis;
+						tempxaxis.options.min = o.start;
+						tempxaxis.options.max = o.end;
+						energyGraph.setupGrid();
+						energyGraph.draw();
+						summary(o);
+					},
+				},
+				xaxes: [{
+					mode: "time",
+					timeformat: "%m/%d/%Y",
+					timezone: "browser",
+				}],
+				yaxes: [{
+					show: false
+				}],
+			});
+			summary(initSpan);
+		});
+	};
+
+	$(function() {
+		getData();
+		getEnergy();
+	});
+
+
+</script>
+</head>
+<body bgcolor="#4d4d4d">
+<div id="wrapper" style="width:1000px;margin:0 auto; background-color:#d9d9d9;border: 3px solid black">
+<h1 style="text-align:center">Nest Extended: Long Lake</h1>
+<a href="phpMyAdmin">
+  <div id="admin" class="nav" style="width:1000px;text-align:center">
+    Download Datalog
+  </div>
+</a>
+<a href="https://home.nest.com/">
+  <div id="nestlogon" class="nav" style="width:1000px;text-align:center">
+    login to NEST home
+  </div>
+</a>
+<br>
+<hr>
+<div style="width:1000px;text-align:center"><b>Latest System Status</b></div>
+<div id="Status0" style="width:1000px;height:18px;text-align:center">Last Communication: <span id="c_time">c_time</span> </div>
+<div id="Status1" style="width:1000px;height:18px;text-align:center">Outside Temp: <span id="c_outside_temp">c_outside_temp</span> </div>
+<div id="Status2" style="width:1000px;height:18px;text-align:center">Current Temp: <span id="c_inside_temp">c_inside_temp</span> </div>
+<div id="Status3" style="width:1000px;height:18px;text-align:center">Heat Setpoint: <span id="c_heat_temp">c_heat_temp</span> </div>
+<div id="Status4" style="width:1000px;height:18px;text-align:center">AC Setpoint: <span id="c_cool_temp">c_cool_temp</span> </div>
+<div id="Status5" style="width:1000px;height:18px;text-align:center">Aux Threshold: <span id="c_aux_temp">c_aux_temp</span> </div>
+<div id="Status6" style="width:1000px;height:18px;text-align:center">Heater Status: <span id="c_heat_status">c_heat_status</span> </div>
+<div id="Status7" style="width:1000px;height:18px;text-align:center">AC Status: <span id="c_ac_status">c_ac_status</span> </div>
+<div id="Status8" style="width:1000px;height:18px;text-align:center">Fan Status: <span id="c_fan_status">c_fan_status</span> </div>
+<div id="Status9" style="width:1000px;height:18px;text-align:center">Aux Heater Status: <span id="c_aux_status">c_aux_status</span> </div>
+<div id="Status10" style="width:1000px;height:18px;text-align:center">Away Status: <span id="c_away_status">c_away_status</span> </div>
+<div id="System Configuration" style="width:1000px;height:18px;text-align:center"><b>System Configuration: </b><span id="sysinfo">sysinfo</span> </div>
+
+<br>
+<hr>
+<div style="width:1000px;text-align:center"><b>TEMPERATURE</b></div>
+<div style="width:1000px;text-align:center">
+</div>
+<div id="navigation" style="width:1000px;height:100px;"></div>
+<div id="temperature" style="width:1000px;height:500px;"></div>
+<div style="width:1000px;height:10px;">&nbsp;</div>
+<hr>
+<div style="width:500px;float:left;text-align:center"><b>HUMIDITY</b></div>
+<div style="width:500px;float:right;text-align:center"><b>BATTERY LEVEL</b></div>
+<div id="humidity" style="float:left;width:500px;height:250px;"></div>
+<div id="miscellany" style="float:right;width:500px;height:250px;"></div>
+<br>
+<hr>
+<br>
+<div style="width:1000px;text-align:center"><b>ENERGY</b></div>
+<div id="energynav" style="width:1000px;height:100px;"></div>
+<div id="energy" style="width:1000px;height:500px;text-align:center"></div>
+<hr>
+<br>
+<div id="energy_report" style="width:1000px;height:100px;text-align:center">Displaying <span id="heating">heat</span> heating hours, <span id="cooling">cool</span> cooling hours for <span id="days">number</span> days.</div>
+</div>
+
+</body>
+</html>
