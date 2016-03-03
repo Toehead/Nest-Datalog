@@ -151,26 +151,24 @@ $nest->setFanMode(FAN_MODE_AUTO);
 //---------------------------------------------------------------------------------------------------------------------------------------------
 
 
-//Get data from Nest energy reports (daily), populate degree days. Go back last month. 
+//Get data from Nest energy reports (daily), populate degree days. Go back last 10 days(all that nest sends). 
 
 elseif ($datatype === 'daily') {
-	//Used to get Nest energy reports
+	//Used to get Nest energy reports. Includes 10 days of data. 
 	$energy = $nest->getEnergyLatest();
-	//Loop through the array of days and get the data
-	$yesterday_date = date("Y-m-d", time() - 60 * 60 * 24);
+	//Loop through the array of days and get the data for eac day
+	$yesterday_date = date("Y-m-d", time() - 60 * 60 * 24);//calculate yesterday's date. We can't get degree days for today.
 	$days = $energy->objects[0]->value->days; 
-//print_r($weather);//Print array of days
+//print_r($weather);//Print array of days to browser for debug purposes
 	foreach ($days as $day) {
-		//We can only get degree days for yesterday. If this isn't  yesterday, we'll have to skip it.
+		//We can only get degree days for yesterday or older. 
 
 			$active_date = date("Ymd", strtotime($day->day));//Change date format for weather underground api		
 			//print_r($active_date);//Print active date for debug purposes
 
-
-		
 			//Check to see if there is already a record for this day.
 			$result = $con->query("SELECT date FROM energy_reports WHERE date = '".$day->day."'");
-		
+		//if there is no entry and the day is older than yesterday, get the data from weather underground
 		if($result->num_rows == 0 and strtotime($active_date) < strtotime($yesterday_date) ) {
 
  			//if there is no record for this date, get degree days from weather underground. 
