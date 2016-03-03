@@ -2,7 +2,8 @@
 
 Introduction
 -------------
-This is an expansion of Nest Extended, by Matt Hirschfelt, and relies on the same projects as his version
+This is an expansion of Nest Extended, by Matt Hirschfelt, and relies on the same projects.
+
 <a href="https://github.com/MattHirschfelt/Nest-Extended">Nest Extended</a>
 
 The purpose of this project is to datalog from the Nest Thermostat, as well as provide some options (such as active humidity control or circulation mode) that expand on the Nest capabilities. 
