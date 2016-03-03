@@ -256,6 +256,105 @@ class Nest {
         } else {
             $target_temperatures = $this->temperatureInUserScale((float) $this->last_status->shared->{$serial_number}->target_temperature);
         }
+        //If you want additional data to be passed out of the NEST API, this is the section that needs to be edited. 
+        //Any changes to the array structure need to be dealt with by the nest-get-data library, so make sure that you account for this
+        //Possible Values are:
+//auto_away
+//auto_away_enable
+//auto_away_learning
+//auto_away_reset
+//away_temperature_high
+//away_temperature_high_enabled
+//away_temperature_low
+//away_temperature_low_enabled
+//backplate_bsl_info
+//backplate_bsl_version
+//backplate_model
+//backplate_mono_info
+//backplate_mono_version
+//backplate_serial_number
+//battery_level
+//can_cool
+//can_heat
+//capability_level
+//click_sound
+//compressor_lockout_enabled
+//compressor_lockout_timeout
+//creation_time
+//current_humidity
+//current_schedule_mode
+//current_temperature
+//current_version
+//equipment_type
+//fan_cooling_readiness
+//fan_cooling_state
+//fan_mode
+//forced_air
+//has_aux_heat
+//has_fan
+//has_heat_pump
+//has_x2_heat
+//heat_pump_aux_threshold
+//heat_pump_aux_threshold_enabled
+//heat_pump_comp_threshold
+//heat_pump_comp_threshold_enabled: False
+//hvac_ac_state
+//hvac_aux_heater_state
+//hvac_fan_state
+//hvac_heat_x2_state
+//hvac_heater_state
+//hvac_pins
+//hvac_wires
+//leaf
+//leaf_away_high
+//leaf_away_low
+//leaf_learning
+//leaf_schedule_delta
+//leaf_threshold_cool
+//leaf_threshold_heat
+//learning_days_completed_cool
+//learning_days_completed_heat
+//learning_days_completed_range
+//learning_mode
+//learning_state
+//learning_time
+//local_ip
+//lower_safety_temp
+//lower_safety_temp_enabled
+//mac_address
+//model_version
+//name
+//nlclient_state
+//ob_orientation
+//postal_code
+//range_enable
+//rssi
+//schedule_learning_reset
+//serial_number
+//switch_preconditioning_control
+//switch_system_off
+//target_change_pending
+//target_temperature
+//target_temperature_high
+//target_temperature_low
+//target_temperature_type
+//target_time_confidence
+//temperature_lock
+//temperature_scale
+//time_to_target
+//time_to_target_training
+//type
+//upper_safety_temp
+//upper_safety_temp_enabled
+//user_brightness
+//time_to_target_training
+//type
+//upper_safety_temp
+//upper_safety_temp_enabled
+//user_brightness
+
+        
+        
         $infos = (object) array(
             'current_state' => (object) array(
                 'mode' => $mode,
