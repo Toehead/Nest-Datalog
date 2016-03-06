@@ -22,7 +22,7 @@ Installation
 -------------
 This requires a webserver running MySQL and PHP. I use a LAMP  (Linux, Apache, MySQL and PHP) server running Linux Mint. 
 
-1) Make sure you have a working server. A good guide for a LAMP server is here: <ahref="https://community.linuxmint.com/tutorial/view/486">Setting up a LAMP server</a> 
+1) Make sure you have a working server. A good guide for a LAMP server is here: <a href="https://community.linuxmint.com/tutorial/view/486">Setting up a LAMP server</a> 
 
 2) Once you have verified that PHP and MySQL are installed, copy the files from this project into the root directory of your web server. For Linux, /var/www/ is the usual directory.
 
